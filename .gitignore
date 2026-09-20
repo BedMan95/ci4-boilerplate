@@ -66,11 +66,19 @@ Vagrantfile
 /writable/*.db
 *.sqlite
 *.sqlite3
+*.sql
 
 php_errors.log
 *cookies*.txt
 test_*.txt
 test_*.php
+
+#-------------------------
+# Dynamic Generated Modules (Runtime)
+#-------------------------
+# Allow keeping app/Modules directory structure but ignore runtime generated modules
+/app/Modules/*
+!/app/Modules/.gitkeep
 
 #-------------------------
 # User Guide Temp Files
@@ -128,6 +136,10 @@ _modules/*
 
 # Visual Studio Code
 .vscode/
+
+# Termux / Local environment files
+.bash_history
+*.tmp
 
 /results/
 /phpunit.xml
