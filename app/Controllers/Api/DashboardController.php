@@ -20,9 +20,12 @@ class DashboardController extends BaseApiController
         $userCount = $this->userModel->where('role', 'user')->countAllResults();
 
         return $this->respondSuccess([
-            'totalUsers' => $totalUsers,
-            'adminCount' => $adminCount,
-            'userCount'  => $userCount,
+            'totalUsers'   => $totalUsers,
+            'adminCount'   => $adminCount,
+            'userCount'    => $userCount,
+            'total_users'  => $totalUsers,
+            'active_users' => $userCount,
+            'admins'       => $adminCount,
         ]);
     }
 }

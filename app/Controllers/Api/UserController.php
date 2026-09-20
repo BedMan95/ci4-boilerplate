@@ -21,7 +21,7 @@ class UserController extends BaseApiController
 
         $db = \Config\Database::connect();
         $builder = $db->table('users')
-            ->select('id, username, email, role, status, created_at, updated_at');
+            ->select('id, username, email, role, level, permissions, status, created_at, updated_at');
 
         if ($search !== '') {
             $builder->groupStart()
@@ -58,14 +58,18 @@ class UserController extends BaseApiController
             return $this->respondError('User tidak ditemukan', 404);
         }
 
+        $perms = !empty($user->permissions) ? (is_array($user->permissions) ? $user->permissions : json_decode($user->permissions, true)) : [];
+
         return $this->respondSuccess([
-            'id'         => (int) $user->id,
-            'username'   => $user->username,
-            'email'      => $user->email,
-            'role'       => $user->role,
-            'status'     => (int) $user->status,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
+            'id'          => (int) $user->id,
+            'username'    => $user->username,
+            'email'       => $user->email,
+            'role'        => $user->role,
+            'level'       => (int) ($user->level ?? 1),
+            'permissions' => $perms,
+            'status'      => (int) $user->status,
+            'created_at'  => $user->created_at,
+            'updated_at'  => $user->updated_at,
         ]);
     }
 
@@ -78,17 +82,22 @@ class UserController extends BaseApiController
             'username' => 'required|min_length[3]|max_length[100]',
             'password' => 'required|min_length[8]',
             'role'     => 'required|in_list[admin,user]',
+            'level'    => 'permit_empty|is_natural_no_zero|less_than_equal_to[10]',
         ];
 
         if (!$this->validateData($json, $rules)) {
             return $this->respondError('Validasi gagal', 422, $this->validator->getErrors());
         }
 
+        $permissions = isset($json['permissions']) ? (is_array($json['permissions']) ? json_encode($json['permissions']) : $json['permissions']) : json_encode($json['role'] === 'admin' ? ['*'] : ['read']);
+
         $data = [
             'email'         => trim($json['email']),
             'username'      => trim($json['username']),
             'password_hash' => password_hash($json['password'], PASSWORD_DEFAULT),
             'role'          => $json['role'],
+            'level'         => isset($json['level']) ? (int) $json['level'] : ($json['role'] === 'admin' ? 10 : 1),
+            'permissions'   => $permissions,
             'status'        => isset($json['status']) ? (int) $json['status'] : 1,
         ];
 
@@ -117,6 +126,7 @@ class UserController extends BaseApiController
             'email'    => 'required|valid_email|is_unique[users.email,id,' . $id . ']',
             'username' => 'required|min_length[3]|max_length[100]',
             'role'     => 'required|in_list[admin,user]',
+            'level'    => 'permit_empty|is_natural_no_zero|less_than_equal_to[10]',
         ];
 
         if (!empty($json['password'])) {
@@ -132,9 +142,14 @@ class UserController extends BaseApiController
             'email'      => trim($json['email']),
             'username'   => trim($json['username']),
             'role'       => $json['role'],
+            'level'      => isset($json['level']) ? (int) $json['level'] : (int) ($user->level ?? 1),
             'status'     => isset($json['status']) ? (int) $json['status'] : (int) $user->status,
             'updated_at' => date('Y-m-d H:i:s'),
         ];
+
+        if (isset($json['permissions'])) {
+            $data['permissions'] = is_array($json['permissions']) ? json_encode($json['permissions']) : $json['permissions'];
+        }
 
         if (!empty($json['password'])) {
             $data['password_hash'] = password_hash($json['password'], PASSWORD_DEFAULT);

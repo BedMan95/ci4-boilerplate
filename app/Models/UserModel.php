@@ -18,6 +18,8 @@ class UserModel extends Model
         'email',
         'password_hash',
         'role',
+        'level',
+        'permissions',
         'status',
         'created_at',
         'updated_at',

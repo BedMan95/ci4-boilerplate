@@ -20,10 +20,12 @@ class AuthController extends BaseApiController
         }
 
         return $this->respondSuccess([
-            'id'       => session()->get('user_id'),
-            'username' => session()->get('username'),
-            'email'    => session()->get('email'),
-            'role'     => session()->get('role'),
+            'id'          => session()->get('user_id'),
+            'username'    => session()->get('username'),
+            'email'       => session()->get('email'),
+            'role'        => session()->get('role'),
+            'level'       => (int) (session()->get('level') ?? 1),
+            'permissions' => session()->get('permissions') ?? ['read'],
         ]);
     }
 
@@ -47,20 +49,26 @@ class AuthController extends BaseApiController
             return $this->respondError('Akun Anda tidak aktif', 403);
         }
 
+        $perms = !empty($user->permissions) ? (is_array($user->permissions) ? $user->permissions : json_decode($user->permissions, true)) : ($user->role === 'admin' ? ['*'] : ['read']);
+
         session()->regenerate();
         session()->set([
-            'user_id'    => (int) $user->id,
-            'username'   => $user->username,
-            'email'      => $user->email,
-            'role'       => $user->role,
-            'isLoggedIn' => true,
+            'user_id'     => (int) $user->id,
+            'username'    => $user->username,
+            'email'       => $user->email,
+            'role'        => $user->role,
+            'level'       => (int) ($user->level ?? 1),
+            'permissions' => $perms,
+            'isLoggedIn'  => true,
         ]);
 
         return $this->respondSuccess([
-            'id'       => (int) $user->id,
-            'username' => $user->username,
-            'email'    => $user->email,
-            'role'     => $user->role,
+            'id'          => (int) $user->id,
+            'username'    => $user->username,
+            'email'       => $user->email,
+            'role'        => $user->role,
+            'level'       => (int) ($user->level ?? 1),
+            'permissions' => $perms,
         ], 'Login berhasil');
     }
 
@@ -84,6 +92,8 @@ class AuthController extends BaseApiController
             'username'      => trim($json['username']),
             'password_hash' => password_hash($json['password'], PASSWORD_DEFAULT),
             'role'          => 'user',
+            'level'         => 1,
+            'permissions'   => json_encode(['read']),
             'status'        => 1,
         ];
 

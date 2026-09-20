@@ -32,7 +32,25 @@ $routes->group('api', function ($routes) {
         $routes->post('(:num)', 'Api\UserController::update/$1');
         $routes->delete('(:num)', 'Api\UserController::delete/$1');
     });
+
+    // Module public/authenticated menu list (accessible by all logged-in users)
+    $routes->get('modules/menu', 'Api\ModuleController::menu', ['filter' => 'apiAuth']);
+
+    // Module management endpoints
+    $routes->group('modules', ['filter' => ['apiAuth', 'apiAdmin']], function ($routes) {
+        $routes->get('/', 'Api\ModuleController::index');
+        $routes->post('/', 'Api\ModuleController::store');
+        $routes->get('(:num)', 'Api\ModuleController::show/$1');
+        $routes->put('(:num)', 'Api\ModuleController::update/$1');
+        $routes->post('(:num)', 'Api\ModuleController::update/$1');
+        $routes->delete('(:num)', 'Api\ModuleController::delete/$1');
+    });
 });
+
+// Dynamic Module Routes Loader
+foreach (glob(APPPATH . 'Modules/*/Routes.php') as $moduleRouteFile) {
+    require $moduleRouteFile;
+}
 
 // Logout fallback
 $routes->get('/logout', function () {

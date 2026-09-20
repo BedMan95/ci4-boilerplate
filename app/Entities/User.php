@@ -12,6 +12,8 @@ class User extends Entity
         'email' => null,
         'password_hash' => null,
         'role' => 'user',
+        'level' => 1,
+        'permissions' => null,
         'status' => 1,
         'created_at' => null,
         'updated_at' => null,
@@ -24,6 +26,7 @@ class User extends Entity
 
     protected $casts = [
         'id' => 'int',
+        'level' => 'int',
         'status' => 'int',
     ];
 
