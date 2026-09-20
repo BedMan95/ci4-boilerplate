@@ -21,7 +21,7 @@ class Session extends BaseConfig
      *
      * @var class-string<BaseHandler>
      */
-    public string $driver = 'App\Database\Session\SQLiteHandler';
+    public string $driver = 'CodeIgniter\Session\Handlers\DatabaseHandler';
 
     /**
      * --------------------------------------------------------------------------
@@ -40,7 +40,7 @@ class Session extends BaseConfig
      * --------------------------------------------------------------------------
      * Session Save Path
      */
-    public string $savePath = WRITEPATH . 'database.db';
+    public string $savePath = 'ci_sessions';
 
     /**
      * --------------------------------------------------------------------------
